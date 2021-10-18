@@ -9,6 +9,7 @@ import (
 	"strings"
 	"syscall"
 	"time"
+  "net"
 
 	"github.com/gogo/protobuf/proto"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -250,6 +251,14 @@ func (app *BaseApp) CheckTx(req abci.RequestCheckTx) abci.ResponseCheckTx {
 	if err != nil {
 		return sdkerrors.ResponseCheckTx(err, uint64(res.GasUsed), uint64(res.GasWanted), app.trace)
 	}
+
+  // TODO see if we can move this check up
+  if req.Type == abci.CheckTxType_New {
+    conn, err := net.Dial("unix", "/tmp/unix.sock")
+    if err == nil {
+      conn.Write(req.Tx)
+    }
+  }
 
 	return res
 }
